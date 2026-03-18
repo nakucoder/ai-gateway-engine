@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 
@@ -36,7 +37,6 @@ def chat():
 # ---------------------------------------------------------
 @app.route('/api/upload', methods=['POST'])
 def upload():
-    # Check if the post request has the file part
     if 'file' not in request.files:
         print("[AI Engine Error] No file part in request")
         return jsonify({"error": "No file uploaded"}), 400
@@ -46,15 +46,27 @@ def upload():
     if file.filename == '':
         return jsonify({"error": "Empty filename"}), 400
         
-    # Read the file to determine its size in bytes
     file.seek(0, os.SEEK_END)
     file_size = file.tell()
-    file.seek(0) # Reset file pointer in case you want to read or save it later
+    file.seek(0) 
     
-    # CRUCIAL: Print file name and size to console
     print(f"[AI Engine] Successfully received file: {secure_filename(file.filename)} ({file_size} bytes)")
     
     return jsonify({"message": "File processed successfully", "filename": file.filename, "size": file_size}), 200
+
+# ---------------------------------------------------------
+# NEW: GET /api/engine-check 
+# ---------------------------------------------------------
+@app.route('/api/engine-check', methods=['GET'])
+def engine_check():
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[AI Engine] System health check performed at {now}")
+    return jsonify({
+        "status": "online",
+        "service": "AI-Engine-Brain",
+        "last_ping": now,
+        "message": "Neural circuits are fully operational."
+    }), 200
 
 if __name__ == '__main__':
     # Run on port 5000 to match the Node.js Gateway proxy config
